@@ -1,0 +1,5 @@
+motsognir (1.0.11-1) unstable; urgency=medium
+
+  * replaced sprintf, strcpy with snprintf, memcpy; const correctness fixes.
+
+ -- baitisj <jeff@baitis.net>  Sun, 24 Feb 2019 07:27:03 -0800
