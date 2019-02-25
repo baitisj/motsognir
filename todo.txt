@@ -1,0 +1,15 @@
+- configurable URL:-redirector page (with variable substitution)
+- the custom httperror page should be fitted with variable substitution
+- log uniformization (?)
+
+Would be nice to free all memory cleanly when exiting, instead of relying on the OS to do it
+
+Convert UTF8 filenames to the selected outputcharset
+
+- session tracking/stats
+- limit of total sessions
+- limit per ip
+- limit of new conns/s
+- limit of new conns/ip/s
+- limit of datacount/ip/hour (or day?)
+- per/ip throttling
