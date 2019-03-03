@@ -967,6 +967,27 @@ static int motsognir_dirsort(const struct dirent **a, const struct dirent **b) {
 }
 
 
+/* Returns file size */
+static off_t fsize(const char* filename) {
+  struct stat st;
+  if (stat(filename, &st) == 0) {
+    return st.st_size;
+  }
+  return -1;
+}
+
+/* Returns string formatted file modification date */
+/* You must provide a preallocated buffer */
+static int fdate(const char* filename, char* buf, size_t buf_size) {
+  time_t mtime;
+  struct stat st;
+  if (stat(filename, &st) == 0) {
+    mtime=st.st_mtime;
+  }
+  strftime(buf, buf_size, "%Y-%m-%d %H:%M:%S", localtime(&mtime));
+  return -1;
+}
+
 /* outputs a gophermap-compatible listing of the directory's content.
  * dirsonly controls whether to list directories only (if set to non-zero), or
  * directories and files. */
@@ -998,7 +1019,11 @@ static void outputdircontent(int sock, const struct MotsognirConfig *config, con
   /* iterate on every entry */
   entriesdisplayed = 0;
   for (x = 0; x < direntriescount; x++) {
+    int  filesize=-1;
     char entrytype;
+    char modtime[20];
+    char fileNameSize[80];
+    char fullpath[4096];
     char entryselector[1024];
     char entryselector_encoded[1024];
     if (direntries[x]->d_name[0] == '.') continue; /* skip any entry starting with '.' (these are either hidden files or system stuff like '.' or '..') */
@@ -1013,8 +1038,12 @@ static void outputdircontent(int sock, const struct MotsognirConfig *config, con
     }
     entriesdisplayed += 1;
     snprintf(entryselector, sizeof(entryselector), "%s%s", directorytolist, direntries[x]->d_name);
+    snprintf(fullpath, sizeof(fullpath), "%s%s",localfile,direntries[x]->d_name);
+    filesize=(int)fsize(fullpath);
+    fdate(fullpath, modtime, sizeof(modtime));
+    snprintf(fileNameSize, sizeof(fileNameSize), "% 12d  % 12s  %s", filesize, modtime, direntries[x]->d_name); /* Adds file size to the filename in the directory listing */
     percencode(entryselector, entryselector_encoded, sizeof(entryselector_encoded));
-    snprintf(tempstring, sizeof(tempstring), "%c%s\t%s\t%s\t%d", entrytype, direntries[x]->d_name, entryselector_encoded, config->gopherhostname, config->gopherport);
+    snprintf(tempstring, sizeof(tempstring), "%c%s\t%s\t%s\t%d", entrytype, fileNameSize, entryselector_encoded, config->gopherhostname, config->gopherport);
     sendline(sock, tempstring);
     free(direntries[x]);
   }
